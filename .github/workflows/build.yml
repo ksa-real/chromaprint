@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  test:
+  test-linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -49,7 +49,7 @@ jobs:
         make VERBOSE=1
         make check VERBOSE=1
 
-  package:
+  package-linux-windows:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -94,6 +94,33 @@ jobs:
         name: chromaprint-fpcalc-${{ env.OS }}-${{ env.ARCH }}
         path: chromaprint-${{ env.OS }}-${{ env.ARCH }}/bin/
 
+  package-alpine:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+        - alpine
+        arch:
+        - x86_64
+    env:
+      ARCH: ${{ matrix.arch }}
+      OS: alpine
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set TAG variable
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        echo "::set-env name=TAG::${GITHUB_REF##*/}"
+    - name: Package ${{ env.ARCH }} ${{ env.OS }}
+      run: |
+        export BRANCH=${GITHUB_REF##*/}
+        ./package/build-alpine.sh
+    - name: Archive artifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: chromaprint-fpcalc-${{ env.OS }}-${{ env.ARCH }}
+        path: chromaprint-${{ env.OS }}-${{ env.ARCH }}/bin/
+
   package-macos:
     runs-on: macos-latest
     env:
@@ -119,7 +146,8 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     needs:
-      - package
+      - package-linux-windows
+      - package-alpine
       - package-macos
     steps:
       - uses: actions/checkout@v1
@@ -136,6 +164,10 @@ jobs:
         with:
           name: chromaprint-fpcalc-linux-i686
           path: artifacts/chromaprint-fpcalc-${{ env.VERSION }}-linux-i686/
+      - uses: actions/download-artifact@v1
+        with:
+          name: chromaprint-fpcalc-alpine-x86_64
+          path: artifacts/chromaprint-fpcalc-${{ env.VERSION }}-alpine-x86_64/
       - uses: actions/download-artifact@v1
         with:
           name: chromaprint-fpcalc-windows-x86_64
@@ -155,7 +187,7 @@ jobs:
       - name: Make tarballs
         run: |
           cd artifacts/
-          dirs=$(find . -name 'chromaprint-fpcalc-*-macos-*' -o -name 'chromaprint-fpcalc-*-linux-*' -type d)
+          dirs=$(find . -name 'chromaprint-fpcalc-*-macos-*' -o -name 'chromaprint-fpcalc-*-linux-*' -o -name 'chromaprint-fpcalc-*-alpine-*' -type d)
           for dir in $dirs
           do
             name=$(basename $dir)

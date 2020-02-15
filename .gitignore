@@ -3,6 +3,7 @@ CMakeCache.txt
 Makefile
 cmake_install.cmake
 cmake_uninstall.cmake
+cmake-build-debug/
 config.h
 tests/all_tests
 tools/fpgen
@@ -39,3 +40,5 @@ src/Debug
 src/Release
 fpcalc
 fpcmp
+
+.idea/
