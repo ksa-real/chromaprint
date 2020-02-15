@@ -11,6 +11,7 @@
 namespace chromaprint {
 
 static const int NUM_BANDS = 12;
+static const double LOG_HALF_NOTE = 0.5 / NUM_BANDS;
 
 inline double FreqToOctave(double freq, double base = 440.0 / 16.0)
 {
@@ -37,10 +38,10 @@ void Chroma::PrepareNotes(int min_freq, int max_freq, int frame_size, int sample
 	m_max_index = std::min(frame_size / 2, FreqToIndex(max_freq, frame_size, sample_rate));
 	for (int i = m_min_index; i < m_max_index; i++) {
 		double freq = IndexToFreq(i, frame_size, sample_rate);
-		double octave = FreqToOctave(freq);
-		double note = NUM_BANDS * (octave - floor(octave)); 
+		double octave = FreqToOctave(freq) + LOG_HALF_NOTE;
+		double note = NUM_BANDS * (octave - floor(octave));
 		m_notes[i] = (char)note;
-		m_notes_frac[i] = note - m_notes[i];
+		m_notes_frac[i] = note - m_notes[i] - 0.5;
 	}
 }
 

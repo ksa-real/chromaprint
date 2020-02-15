@@ -6,6 +6,8 @@
 #include <limits.h>
 
 
+// nfft signal buffer size (samples)
+// bin1 & bin2 - target periods, amplitude is half the max value
 static
 double two_tone_test( int nfft, int bin1,int bin2)
 {
@@ -14,6 +16,8 @@ double two_tone_test( int nfft, int bin1,int bin2)
     kiss_fft_scalar *tbuf = NULL;
 
     int i;
+    // frequencies relative to nfft
+    // freq = `bin` times per `nfft` samples. In chromaprint case f1*nfft/base_frequency Hz
     double f1 = bin1*2*M_PI/nfft;
     double f2 = bin2*2*M_PI/nfft;
     double sigpow=0;

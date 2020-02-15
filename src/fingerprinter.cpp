@@ -18,8 +18,8 @@
 
 namespace chromaprint {
 
-static const int MIN_FREQ = 28;
-static const int MAX_FREQ = 3520;
+static const int MIN_FREQ = 28; // 27.5 Hz = A0 (4 - First octave, 3 - Small, 2 - Great, 1 - Contra, 0 - Sub Contra
+static const int MAX_FREQ = 3520; // 3520 Hz = A7 (5 - Second, 6 - Third, 7 - Fourth)
 
 Fingerprinter::Fingerprinter(FingerprinterConfiguration *config) {
 	if (!config) {

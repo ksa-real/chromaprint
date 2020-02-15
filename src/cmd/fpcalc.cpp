@@ -271,15 +271,19 @@ void ProcessFile(ChromaprintContext *ctx, FFmpegAudioReader &reader, const char 
 		exit(2);
 	}
 
+	// Current stream progress
 	size_t stream_size = 0;
+	// Stream limit (samples). First frame making the current stream size greater is rejected.
 	const size_t stream_limit = g_max_duration * reader.GetSampleRate();
 
 	size_t chunk_size = 0;
+	// Chunk limit (samples)
 	const size_t chunk_limit = g_max_chunk_duration * reader.GetSampleRate();
 
 	size_t extra_chunk_limit = 0;
 	double overlap = 0.0;
 	if (chunk_limit > 0 && g_overlap) {
+		// Only for the first chunk!
 		extra_chunk_limit = chromaprint_get_delay(ctx);
 		overlap = chromaprint_get_delay_ms(ctx) / 1000.0;
 	}
@@ -316,6 +320,7 @@ void ProcessFile(ChromaprintContext *ctx, FFmpegAudioReader &reader, const char 
 		}
 
 		bool chunk_done = false;
+		// Note frame_size doesn't change during chunk related computation
 		size_t first_part_size = frame_size;
 		if (chunk_limit > 0) {
 			const auto remaining = chunk_limit + extra_chunk_limit - chunk_size;
@@ -338,6 +343,8 @@ void ProcessFile(ChromaprintContext *ctx, FFmpegAudioReader &reader, const char 
 				exit(2);
 			}
 
+			// Expression can be simplified to `chunk_duration = (double)chunk_size / reader.getSampleRate()
+			// I.e. overlap is included
 			const auto chunk_duration = (chunk_size - extra_chunk_limit) * 1.0 / reader.GetSampleRate() + overlap;
 			PrintResult(ctx, reader, first_chunk, ts, chunk_duration);
 			got_results = true;
